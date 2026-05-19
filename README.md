@@ -12,7 +12,7 @@ npm run dev
 
 ## Flow
 
-1. **Clinic Name** → **Generate PDF**
+1. **Open certificate** — loads the bundled template from `public/certificate-of-partnership.pdf`
 2. Signature (draw or upload) → **Use signature**
 3. PNG stamp (optional)
 4. Drag and resize on the preview
@@ -29,7 +29,7 @@ Signature is required. Stamp is optional.
 
 Two jobs in one library:
 
-1. **Template generation** — in the PoC, instead of DOC/DOCX on the backend: A4 page, text, clinic name (`generatePdf.ts`).
+1. **Template** — the Certificate of Partnership PDF is committed in `public/certificate-of-partnership.pdf` and loaded at runtime. **Merge** still uses pdf-lib to embed signature/stamp (`mergePdf.ts`).
 2. **Merge** — embed signature and stamp PNG/JPEG into an existing PDF at point coordinates (`mergePdf.ts`).
 
 Runs in the browser with `Uint8Array`, no server. Simpler API than low-level PDF.js for **creating** and **editing** PDFs.

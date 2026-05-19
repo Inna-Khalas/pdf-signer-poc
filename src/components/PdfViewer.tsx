@@ -6,15 +6,15 @@ import { DraggableOverlay } from './DraggableOverlay';
 const RENDER_WIDTH = 640;
 
 export const DEFAULT_SIGNATURE: ScreenPlacement = {
-  x: 80,
-  y: 400,
+  x: 360,
+  y: 580,
   width: 200,
   height: 72,
 };
 
 export const DEFAULT_STAMP: ScreenPlacement = {
-  x: 400,
-  y: 400,
+  x: 380,
+  y: 560,
   width: 110,
   height: 110,
 };

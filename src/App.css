@@ -40,6 +40,10 @@
   color: #64748b;
 }
 
+.template-hint {
+  margin-bottom: 0.75rem;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -206,6 +210,13 @@ button:disabled {
   font-weight: 600;
   color: #2563eb;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.overlay-item:hover .overlay-label,
+.overlay-item:focus-within .overlay-label {
+  opacity: 1;
 }
 
 .resize-handle {

@@ -3,7 +3,7 @@ import { PdfViewer, DEFAULT_SIGNATURE, DEFAULT_STAMP } from './components/PdfVie
 import { SignaturePanel } from './components/SignaturePanel';
 import { StampUpload } from './components/StampUpload';
 import { downloadBlob, signedPdfFilename } from './lib/exportData';
-import { generateTemplatePdf } from './lib/generatePdf';
+import { loadCertificateTemplate } from './lib/loadCertificateTemplate';
 import { mergeSignedPdf } from './lib/mergePdf';
 import './lib/pdfWorker';
 import { screenToPdf } from './lib/coordinates';
@@ -27,8 +27,9 @@ function placementWithSize(
   }));
 }
 
+const TEMPLATE_LABEL = 'certificate-of-partnership';
+
 function App() {
-  const [clinicName, setClinicName] = useState('Airo Medical Clinic');
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [metrics, setMetrics] = useState<PageMetrics | null>(null);
 
@@ -41,15 +42,27 @@ function App() {
 
   const [status, setStatus] = useState<string | null>(null);
 
-  const generate = async () => {
-    const bytes = await generateTemplatePdf(clinicName.trim() || 'Unnamed Clinic');
-    setPdfBytes(bytes);
+  const clearSignature = () => {
     setSignatureImage(null);
-    setStampImage(null);
     setSignaturePlacement(null);
+  };
+
+  const clearStamp = () => {
+    setStampImage(null);
     setStampPlacement(null);
-    setMetrics(null);
-    setStatus(null);
+  };
+
+  const openCertificate = async () => {
+    try {
+      const bytes = await loadCertificateTemplate();
+      setPdfBytes(bytes);
+      clearSignature();
+      clearStamp();
+      setMetrics(null);
+      setStatus(null);
+    } catch {
+      setStatus('Could not load the certificate template.');
+    }
   };
 
   const onSignatureApply = async (dataUrl: string) => {
@@ -68,7 +81,7 @@ function App() {
 
   const handleSave = async () => {
     if (!pdfBytes || !metrics) {
-      setStatus('Generate a PDF and wait for it to load.');
+      setStatus('Open the certificate and wait for it to load.');
       return;
     }
     if (!signatureImage || !signaturePlacement) {
@@ -94,7 +107,7 @@ function App() {
         : null,
     );
 
-    const filename = signedPdfFilename(clinicName.trim() || 'Unnamed Clinic');
+    const filename = signedPdfFilename(TEMPLATE_LABEL);
     downloadBlob(
       new Blob([new Uint8Array(merged)], { type: 'application/pdf' }),
       filename,
@@ -112,27 +125,19 @@ function App() {
         <aside className="sidebar">
           <section className="panel">
             <h2>Template</h2>
-            <label className="field">
-              Clinic Name
-              <input
-                value={clinicName}
-                onChange={(e) => setClinicName(e.target.value)}
-                placeholder="Clinic Name"
-              />
-            </label>
-            <button type="button" className="primary block" onClick={generate}>
-              Generate PDF
+            <p className="hint template-hint">
+              Certificate of Partnership (Miracle Regenerative Center)
+            </p>
+            <button type="button" className="primary block" onClick={openCertificate}>
+              Open certificate
             </button>
           </section>
 
-          <SignaturePanel onApply={onSignatureApply} />
+          <SignaturePanel onApply={onSignatureApply} onClearDocument={clearSignature} />
           <StampUpload
             image={stampImage}
             onUpload={onStampUpload}
-            onClear={() => {
-              setStampImage(null);
-              setStampPlacement(null);
-            }}
+            onClear={clearStamp}
           />
 
           <section className="panel">
@@ -164,7 +169,7 @@ function App() {
             />
           ) : (
             <section className="panel empty">
-              <p className="hint">Generate a PDF to start.</p>
+              <p className="hint">Open the certificate to start.</p>
             </section>
           )}
         </div>

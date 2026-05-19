@@ -18,9 +18,10 @@ const SIGNATURE_PAD_OPTIONS = {
 
 interface Props {
   onApply: (dataUrl: string) => void;
+  onClearDocument: () => void;
 }
 
-export function SignaturePanel({ onApply }: Props) {
+export function SignaturePanel({ onApply, onClearDocument }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePad | null>(null);
 
@@ -67,7 +68,13 @@ export function SignaturePanel({ onApply }: Props) {
       <h2>Signature</h2>
       <canvas ref={canvasRef} className="signature-canvas" />
       <div className="row">
-        <button type="button" onClick={() => padRef.current?.clear()}>
+        <button
+          type="button"
+          onClick={() => {
+            padRef.current?.clear();
+            onClearDocument();
+          }}
+        >
           Clear
         </button>
         <button type="button" className="primary" onClick={applyDrawn}>
