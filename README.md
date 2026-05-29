@@ -12,7 +12,7 @@ npm run dev
 
 ## Flow
 
-1. **Open certificate** — loads the bundled template from `public/certificate-of-partnership.pdf`
+1. **Clinic name** → **Generate certificate** — builds the PDF in the browser (static header/terms/footer images + dynamic intro paragraph)
 2. Signature (draw or upload) → **Use signature**
 3. PNG stamp (optional)
 4. Drag and resize on the preview
@@ -29,14 +29,14 @@ Signature is required. Stamp is optional.
 
 Two jobs in one library:
 
-1. **Template** — the Certificate of Partnership PDF is committed in `public/certificate-of-partnership.pdf` and loaded at runtime. **Merge** still uses pdf-lib to embed signature/stamp (`mergePdf.ts`).
-2. **Merge** — embed signature and stamp PNG/JPEG into an existing PDF at point coordinates (`mergePdf.ts`).
+1. **Template** — `generateCertificatePdf.ts` composes the page from PNG slices in `src/assets/certificate/` (header, terms, footer) and **Poppins** (12pt) for the clinic-name paragraph. Source reference: `public/certificate-of-partnership.pdf`.
+2. **Merge** — embed signature and stamp PNG/JPEG into the generated PDF at point coordinates (`mergePdf.ts`).
 
 Runs in the browser with `Uint8Array`, no server. Simpler API than low-level PDF.js for **creating** and **editing** PDFs.
 
 **Why not PDF.js alone:** PDF.js is great for **reading** and rendering, not for building pages programmatically or `drawImage` into the final file.
 
-**PoC limitation:** standard Helvetica supports Latin only in the clinic name. In production, build the template on the backend (DOCX → PDF).
+**PoC limitation:** layout slices are fixed PNGs; only the intro paragraph is dynamic. In production, build the template on the backend (DOCX → PDF).
 
 ---
 

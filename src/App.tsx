@@ -3,7 +3,7 @@ import { PdfViewer, DEFAULT_SIGNATURE, DEFAULT_STAMP } from './components/PdfVie
 import { SignaturePanel } from './components/SignaturePanel';
 import { StampUpload } from './components/StampUpload';
 import { downloadBlob, signedPdfFilename } from './lib/exportData';
-import { loadCertificateTemplate } from './lib/loadCertificateTemplate';
+import { generateCertificatePdf } from './lib/generateCertificatePdf';
 import { mergeSignedPdf } from './lib/mergePdf';
 import './lib/pdfWorker';
 import { screenToPdf } from './lib/coordinates';
@@ -29,7 +29,10 @@ function placementWithSize(
 
 const TEMPLATE_LABEL = 'certificate-of-partnership';
 
+const DEFAULT_CLINIC_NAME = 'Miracle Regenerative Center, Bangkok, Thailand';
+
 function App() {
+  const [clinicName, setClinicName] = useState(DEFAULT_CLINIC_NAME);
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [metrics, setMetrics] = useState<PageMetrics | null>(null);
 
@@ -52,16 +55,17 @@ function App() {
     setStampPlacement(null);
   };
 
-  const openCertificate = async () => {
+  const generateCertificate = async () => {
     try {
-      const bytes = await loadCertificateTemplate();
+      const bytes = await generateCertificatePdf(clinicName);
       setPdfBytes(bytes);
       clearSignature();
       clearStamp();
       setMetrics(null);
       setStatus(null);
-    } catch {
-      setStatus('Could not load the certificate template.');
+    } catch (error) {
+      console.error('Certificate generation failed:', error);
+      setStatus('Could not generate the certificate.');
     }
   };
 
@@ -81,7 +85,7 @@ function App() {
 
   const handleSave = async () => {
     if (!pdfBytes || !metrics) {
-      setStatus('Open the certificate and wait for it to load.');
+      setStatus('Generate the certificate and wait for it to load.');
       return;
     }
     if (!signatureImage || !signaturePlacement) {
@@ -107,7 +111,7 @@ function App() {
         : null,
     );
 
-    const filename = signedPdfFilename(TEMPLATE_LABEL);
+    const filename = signedPdfFilename(clinicName.trim() || TEMPLATE_LABEL);
     downloadBlob(
       new Blob([new Uint8Array(merged)], { type: 'application/pdf' }),
       filename,
@@ -125,11 +129,17 @@ function App() {
         <aside className="sidebar">
           <section className="panel">
             <h2>Template</h2>
-            <p className="hint template-hint">
-              Certificate of Partnership (Miracle Regenerative Center)
-            </p>
-            <button type="button" className="primary block" onClick={openCertificate}>
-              Open certificate
+            <p className="hint template-hint">Certificate of Partnership</p>
+            <label className="field">
+              Clinic name
+              <input
+                value={clinicName}
+                onChange={(e) => setClinicName(e.target.value)}
+                placeholder={DEFAULT_CLINIC_NAME}
+              />
+            </label>
+            <button type="button" className="primary block" onClick={generateCertificate}>
+              Generate certificate
             </button>
           </section>
 
@@ -169,7 +179,7 @@ function App() {
             />
           ) : (
             <section className="panel empty">
-              <p className="hint">Open the certificate to start.</p>
+              <p className="hint">Enter clinic name and generate the certificate.</p>
             </section>
           )}
         </div>
